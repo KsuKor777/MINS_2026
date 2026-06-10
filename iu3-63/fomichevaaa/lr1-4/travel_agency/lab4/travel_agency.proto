@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package travel_agency.lab4;
+
+message Empty {}
+
+message ClientMessage {
+  int32 client_id = 1;
+  string full_name = 2;
+  string loyalty_level = 3;
+}
+
+message TourMessage {
+  int32 tour_id = 1;
+  string title = 2;
+  string destination = 3;
+  int32 days = 4;
+  string base_price = 5;
+  int32 available_seats = 6;
+}
+
+message BookingMessage {
+  int32 booking_id = 1;
+  int32 client_id = 2;
+  int32 tour_id = 3;
+  int32 travelers_count = 4;
+  string total_price = 5;
+  string discount_rate = 6;
+  string amount_paid = 7;
+  string status = 8;
+  string status_label = 9;
+  string hold_until = 10;
+  bool deadline_notified = 11;
+  string outstanding_balance = 12;
+}
+
+message BookingViewMessage {
+  int32 booking_id = 1;
+  string client_name = 2;
+  string tour_title = 3;
+  int32 travelers_count = 4;
+  string total_price = 5;
+  string discount_rate = 6;
+  string status = 7;
+  string amount_paid = 8;
+  string outstanding_balance = 9;
+  string hold_until = 10;
+}
+
+message ClientIdRequest {
+  int32 client_id = 1;
+}
+
+message TourIdRequest {
+  int32 tour_id = 1;
+}
+
+message BookingIdRequest {
+  int32 booking_id = 1;
+}
+
+message RegisterClientRequest {
+  string full_name = 1;
+  string loyalty_level = 2;
+}
+
+message AddTourRequest {
+  string title = 1;
+  string destination = 2;
+  int32 days = 3;
+  string base_price = 4;
+  int32 available_seats = 5;
+}
+
+message UpdateTourRequest {
+  TourMessage tour = 1;
+}
+
+message CreateBookingRequest {
+  int32 client_id = 1;
+  int32 tour_id = 2;
+  int32 travelers_count = 3;
+  string amount_paid = 4;
+  int32 hold_days = 5;
+}
+
+message PaymentRequest {
+  int32 booking_id = 1;
+  string amount = 2;
+}
+
+message CheckExpiredBookingsRequest {
+  string reference_date = 1;
+}
+
+message StatusResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+}
+
+message ClientResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  ClientMessage client = 4;
+}
+
+message ClientListResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  repeated ClientMessage clients = 4;
+}
+
+message TourResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  TourMessage tour = 4;
+}
+
+message TourListResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  repeated TourMessage tours = 4;
+}
+
+message BookingOperationResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  BookingMessage booking = 4;
+}
+
+message BookingListResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  repeated BookingViewMessage bookings = 4;
+}
+
+message TextResponse {
+  bool success = 1;
+  string message = 2;
+  string trace_id = 3;
+  string text = 4;
+}
+
+service ReferenceService {
+  rpc AddTour(AddTourRequest) returns (TourResponse);
+  rpc UpdateTour(UpdateTourRequest) returns (TourResponse);
+  rpc GetTour(TourIdRequest) returns (TourResponse);
+  rpc ListTours(Empty) returns (TourListResponse);
+  rpc RegisterClient(RegisterClientRequest) returns (ClientResponse);
+  rpc GetClient(ClientIdRequest) returns (ClientResponse);
+  rpc ListClients(Empty) returns (ClientListResponse);
+}
+
+service CoreService {
+  rpc CreateBooking(CreateBookingRequest) returns (BookingOperationResponse);
+  rpc StartBookingProcessing(BookingIdRequest) returns (BookingOperationResponse);
+  rpc MarkBookingReady(BookingIdRequest) returns (BookingOperationResponse);
+  rpc IssueBooking(BookingIdRequest) returns (BookingOperationResponse);
+  rpc CancelBooking(BookingIdRequest) returns (BookingOperationResponse);
+  rpc RecordPayment(PaymentRequest) returns (BookingOperationResponse);
+  rpc ListBookings(Empty) returns (BookingListResponse);
+  rpc CheckExpiredBookings(CheckExpiredBookingsRequest) returns (BookingListResponse);
+  rpc RenderMarketingReport(Empty) returns (TextResponse);
+}
