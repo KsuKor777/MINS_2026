@@ -1,0 +1,213 @@
+syntax = "proto3";
+
+package shop;
+
+option java_multiple_files = true;
+option java_package = "ru.iu3.grpc";
+option java_outer_classname = "ShopProto";
+
+// ============================================
+// Service B - Reference Service (Catalog Service)
+// Предоставляет справочные данные: товары, категории, валидация
+// ============================================
+service ReferenceService {
+  // Получить все товары
+  rpc GetAllProducts(GetAllProductsRequest) returns (GetAllProductsResponse);
+  
+  // Получить товар по ID
+  rpc GetProductById(GetProductByIdRequest) returns (GetProductByIdResponse);
+  
+  // Получить товары по категории
+  rpc GetProductsByCategory(GetProductsByCategoryRequest) returns (GetProductsByCategoryResponse);
+  
+  // Получить все категории
+  rpc GetAllCategories(GetAllCategoriesRequest) returns (GetAllCategoriesResponse);
+  
+  // Валидировать существование товара
+  rpc ValidateProductExists(ValidateProductExistsRequest) returns (ValidateProductExistsResponse);
+  
+  // Валидировать цену товара
+  rpc ValidateProductPrice(ValidateProductPriceRequest) returns (ValidateProductPriceResponse);
+}
+
+// ============================================
+// Service A - Core Service (Cart/Order Service)
+// Вызывается извне, содержит основную бизнес-логику
+// ============================================
+service CoreService {
+  // Добавить товар в корзину
+  rpc AddToCart(AddToCartRequest) returns (AddToCartResponse);
+  
+  // Получить содержимое корзины
+  rpc GetCart(GetCartRequest) returns (GetCartResponse);
+  
+  // Удалить товар из корзины
+  rpc RemoveFromCart(RemoveFromCartRequest) returns (RemoveFromCartResponse);
+  
+  // Очистить корзину
+  rpc ClearCart(ClearCartRequest) returns (ClearCartResponse);
+  
+  // Оформить заказ
+  rpc Checkout(CheckoutRequest) returns (CheckoutResponse);
+  
+  // Получить историю заказов
+  rpc GetOrderHistory(GetOrderHistoryRequest) returns (GetOrderHistoryResponse);
+}
+
+// ============================================
+// Сообщения для Reference Service (Service B)
+// ============================================
+
+message GetAllProductsRequest {}
+
+message GetAllProductsResponse {
+  repeated Product products = 1;
+}
+
+message GetProductByIdRequest {
+  string product_id = 1;
+}
+
+message GetProductByIdResponse {
+  Product product = 1;
+  bool found = 2;
+}
+
+message GetProductsByCategoryRequest {
+  string category = 1;
+}
+
+message GetProductsByCategoryResponse {
+  repeated Product products = 1;
+}
+
+message GetAllCategoriesRequest {}
+
+message GetAllCategoriesResponse {
+  repeated string categories = 1;
+}
+
+message ValidateProductExistsRequest {
+  string product_id = 1;
+}
+
+message ValidateProductExistsResponse {
+  bool exists = 1;
+}
+
+message ValidateProductPriceRequest {
+  string product_id = 1;
+  double expected_price = 2;
+}
+
+message ValidateProductPriceResponse {
+  bool valid = 1;
+  double actual_price = 2;
+}
+
+// ============================================
+// Сообщения для Core Service (Service A)
+// ============================================
+
+message AddToCartRequest {
+  string user_id = 1;
+  string product_id = 2;
+  int32 quantity = 3;
+}
+
+message AddToCartResponse {
+  bool success = 1;
+  string message = 2;
+  Cart cart = 3;
+}
+
+message GetCartRequest {
+  string user_id = 1;
+}
+
+message GetCartResponse {
+  Cart cart = 1;
+}
+
+message RemoveFromCartRequest {
+  string user_id = 1;
+  string product_id = 2;
+}
+
+message RemoveFromCartResponse {
+  bool success = 1;
+  string message = 2;
+  Cart cart = 3;
+}
+
+message ClearCartRequest {
+  string user_id = 1;
+}
+
+message ClearCartResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CheckoutRequest {
+  string user_id = 1;
+  string payment_method = 2;
+}
+
+message CheckoutResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+message GetOrderHistoryRequest {
+  string user_id = 1;
+}
+
+message GetOrderHistoryResponse {
+  repeated Order orders = 1;
+}
+
+// ============================================
+// Общие модели данных
+// ============================================
+
+message Product {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  string category = 5;
+}
+
+message Cart {
+  string user_id = 1;
+  repeated CartItem items = 2;
+  double total_price = 3;
+}
+
+message CartItem {
+  string product_id = 1;
+  string product_title = 2;
+  int32 quantity = 3;
+  double price = 4;
+  double subtotal = 5;
+}
+
+message Order {
+  string id = 1;
+  string user_id = 2;
+  repeated OrderItem items = 3;
+  double total_amount = 4;
+  string status = 5;
+  string created_at = 6;
+  string payment_method = 7;
+}
+
+message OrderItem {
+  string product_id = 1;
+  string product_title = 2;
+  int32 quantity = 3;
+  double price = 4;
+  double subtotal = 5;
+}
